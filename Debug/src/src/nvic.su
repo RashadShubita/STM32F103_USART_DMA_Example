@@ -1,0 +1,4 @@
+core_cm3.h:896:22:NVIC_SetPriorityGrouping	24	static
+core_cm3.h:930:22:NVIC_EnableIRQ	16	static
+core_cm3.h:1014:22:NVIC_SetPriority	16	static
+nvic.c:18:6:NVIC_Init	8	static

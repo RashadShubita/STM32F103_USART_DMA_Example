@@ -1,0 +1,8 @@
+usart.c:95:25:strCmp	32	static
+usart.c:131:6:USART1_IRQ_Callback	16	static
+usart.c:176:6:USART1_TX_DMA_IRQ_Callback	8	static
+usart.c:201:6:USART1_RX_DMA_IRQ_Callback	16	static
+usart.c:246:6:USART_Send_String	24	static
+usart.c:290:6:USART_Init	40	static
+usart.c:378:6:USART_Enable	16	static
+usart.c:407:6:USART1_Process	16	static
