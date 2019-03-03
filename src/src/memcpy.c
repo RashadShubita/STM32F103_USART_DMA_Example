@@ -1,15 +1,14 @@
 /*******************************************************************************
  * @file    memcpy.c
- * @author  Ahmed Eldeep
- * @email   ahmed@almohandes.org
- * @website http://almohandes.org/stm32
- * @date    22.04.2018
+ * @author  Rashad Shubita
+ * @email   shubitarashad@gmail.com
+ * @date    15.02.2019
  *
  * @brief   Copy data between two memory buffers
  * @note
  *
 @verbatim
-Copyright (C) Almohandes.org, 2018
+Copyright (C) 2019, Rashad Shubita
 
 This program is free software: you can redistribute it and/or modify it under
 the terms of the GNU General Public License as published by the Free Software

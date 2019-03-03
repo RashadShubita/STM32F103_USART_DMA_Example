@@ -1,3 +1,4 @@
-dma.c:40:6:DMA_Init	24	static
-dma.c:128:6:DMA_ChannelEnable	16	static
-dma.c:143:6:DMA_ChannelDisable	16	static
+dma.c:16:6:DMA1_Channel3_Init	8	static
+dma.c:64:6:DMA_Channel_Set_Addresses	24	static
+dma.c:83:6:DMA_ChannelEnable	16	static
+dma.c:98:6:DMA_ChannelDisable	16	static

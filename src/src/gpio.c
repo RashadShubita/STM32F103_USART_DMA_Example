@@ -1,9 +1,27 @@
-/*
- * GPIO.c
+/*******************************************************************************
+ * @file    gpio.c
+ * @author  Rashad Shubita
+ * @email   shubitarashad@gmail.com
+ * @date    15.01.2019
  *
- *  Created on: Nov 13, 2018
- *      Author: Rashad Shubita
- */
+ * @brief   Some examples on how to use STM32 GPIOs
+ * @note
+ *
+@verbatim
+Copyright (C) 2019, Rashad Shubita
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see <http://www.gnu.org/licenses/>.
+@endverbatim
+*******************************************************************************/
 
 /* Includes */
 #include "gpio.h"
@@ -43,56 +61,7 @@ void GPIO_Init_PB(void)
 	GPIOA ->ODR    &= ~GPIO_ODR_ODR0;       //active pull-down resistor
 }
 
-/**
- * @brief   USART1 GPIO initialization function
- * @note    PA9  -> USART1_TX
- *          PA10 -> USART1_RX
- *          PA11 -> USART1_CTS
- *          PA12 -> USART1_RTS
- *          "Table 5. Medium-density STM32F103xx pin definitions" in Datasheet
- *          "Table 24. USARTs" in Reference manual
- * @param   HFC if = 0 -> Init. CTS & RTS pins
- * @retval  None
- */
-void GPIO_USART1_Init(uint8_t HFC)
-{
- /* GPIOA clock enable */
-  	RCC ->APB2ENR   |= RCC_APB2ENR_IOPAEN;
 
- /* PA9 TX: Output mode, max speed 2 MHz. */
-	GPIOA ->CRH     &= ~GPIO_CRH_MODE9;
-	GPIOA ->CRH     |=  GPIO_CRH_MODE9_1;
-
- /* PA9 TX: Alternate function output Push-pull */
-  	GPIOA ->CRH     &= ~GPIO_CRH_CNF9;
-    GPIOA ->CRH     |=  GPIO_CRH_CNF9_1;
-
- /* PA10 RX: Floating input */
-  	GPIOA ->CRH     &= ~GPIO_CRH_CNF10;
-    GPIOA ->CRH     |=  GPIO_CRH_CNF10_0;
-
- /* PA10 RX: Input mode */
-  	GPIOA ->CRH     &= ~GPIO_CRH_MODE10;
- if(HFC == 1)
- {
- /* PA11 CTS: Floating input */
-    GPIOA ->CRH     &= ~GPIO_CRH_CNF11;
-  	GPIOA ->CRH     |=  GPIO_CRH_CNF11_0;
-
- /* PA11 CTS: Input mode */
-  	GPIOA ->CRH     &= ~GPIO_CRH_MODE11;
-
- /* PA12 RTS: Output mode, max speed 2 MHz. */
-  	GPIOA ->CRH     &= ~GPIO_CRH_MODE12;
-  	GPIOA ->CRH     |=  GPIO_CRH_MODE12_1;
-
- /* PA12 RTS: Alternate function output Push-pull */
-  	GPIOA ->CRH     &= ~GPIO_CRH_CNF12;
-  	GPIOA ->CRH     |=  GPIO_CRH_CNF12_1;
- }
-
-
-}
 
 /**
  * @brief   USART2 GPIO initialization function

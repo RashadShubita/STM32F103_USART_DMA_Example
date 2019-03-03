@@ -1,9 +1,28 @@
-/*
- * usart.c
+/*******************************************************************************
+ * @file    usart.c
+ * @author  Rashad Shubita
+ * @email   shubitarashad@gmail.com
+ * @date    15.01.2019
  *
- *  Created on: Dec 12, 2018
- *      Author: shubi
- */
+ * @brief   USART configuration source file
+ * @note
+ *
+@verbatim
+Copyright (C) 2019, Rashad Shubita
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see <http://www.gnu.org/licenses/>.
+@endverbatim
+*******************************************************************************/
+
 
 #include "usart.h"
 #include <stddef.h>
@@ -145,7 +164,7 @@ void USART1_IRQ_Callback(void)
     currentErrorStatus = USART1_PARITY_ERROR;
 
     /* Disable DMA Channel for RX  */
-    DMA_ChannelDisable(DMA1_Channel4);
+    DMA_ChannelDisable(DMA1_Channel5);
   }
   else
   {
@@ -160,6 +179,9 @@ void USART1_IRQ_Callback(void)
 
     /* Disable DMA Channel for RX  */
     DMA_ChannelDisable(DMA1_Channel5);
+    /*force DMA1_Channel5_IRQn(USART1_RX_DMA_IRQ_Callback) instead of disable the channel since STM32f1
+      can not requests the end of transfers when EN bit is cleared by software */
+    NVIC_SetPendingIRQ(DMA1_Channel5_IRQn);
   }
   else
   {
@@ -167,6 +189,141 @@ void USART1_IRQ_Callback(void)
   }
 }
 
+
+/**
+ * @brief   DMA1 Channel4 initialization function
+ * @note    Used for data transfer between two memory buffers
+ * @param   None
+ * @retval  None
+ */
+void USART1_TX_DMA_Config(void)
+{
+  /* Enable clock for DMA1*/
+  RCC ->AHBENR |= RCC_AHBENR_DMA1EN;
+
+  /* disable channel, since this registers must not be written when the channel is enabled */
+ 	 if(DMA_CCR1_EN == (DMA_CCR1_EN & DMA1_Channel4->CCR))
+ 	  {
+ 	    /* DMA 2 stream 5 is enabled, shall be disabled first */
+ 		  DMA_ChannelDisable(DMA1_Channel4);
+
+ 	    /* Wait until EN bit is cleared */
+ 	  while(DMA_CCR1_EN == (DMA_CCR1_EN & DMA1_Channel4->CCR))
+ 	    {
+ 	      /* Do nothing until EN bit is cleared */
+ 	    }
+ 	  }
+ 	  else
+ 	  {
+ 	    /* Do nothing, stream 5 is not enabled */
+ 	  }
+
+  /* Set Peripheral size 8-bits (00)*/
+  DMA1_Channel4 ->CCR   &= ~DMA_CCR1_PSIZE;
+
+  /* Set Memory size 8-bits (00)*/
+  DMA1_Channel4 ->CCR   &= ~DMA_CCR1_MSIZE;
+
+  /* Set Channel priority Very high (11)*/
+  DMA1_Channel4 ->CCR   |= DMA_CCR1_PL;
+
+  /* Disable Peripheral increment mode (0) */
+  DMA1_Channel4 ->CCR   &= ~DMA_CCR1_PINC;
+
+  /* Enable memory increment mode (1)*/
+  DMA1_Channel4 ->CCR   |= DMA_CCR1_MINC;
+
+  /* Disable Circular mode (0)*/
+  DMA1_Channel4 ->CCR   &= ~DMA_CCR1_CIRC;
+
+  /* Diable M2M Mode (0) */
+  DMA1_Channel4 ->CCR   &= ~DMA_CCR1_MEM2MEM;
+
+  /* Data transfer direction Read from memory (1)*/
+  DMA1_Channel4 ->CCR   |= DMA_CCR1_DIR;
+
+  /* Enable Transfer complete interrupt */
+  DMA1_Channel4 ->CCR   |= DMA_CCR1_TCIE;
+
+  /* Set address for peripheral */
+  DMA1_Channel4 ->CPAR   = (uint32_t)&USART1->DR;
+
+	__ASM("NOP");
+	__ASM("NOP");
+	__ASM("NOP");
+	__ASM("NOP");
+}
+
+
+/**
+ * @brief   DMA1 Channel5 initialization function
+ * @note    Used for data transfer between two memory buffers
+ * @param   None
+ * @retval  None
+ */
+void USART1_RX_DMA_Config(void)
+{
+	 /* Enable clock for DMA1*/
+	  RCC ->AHBENR |= RCC_AHBENR_DMA1EN;
+
+	  /* disable channel, since this registers must not be written when the channel is enabled */
+	 	 if(DMA_CCR1_EN == (DMA_CCR1_EN & DMA1_Channel5->CCR))
+	 	  {
+	 	    /* DMA 2 stream 5 is enabled, shall be disabled first */
+	 		  DMA_ChannelDisable(DMA1_Channel5);
+
+	 	    /* Wait until EN bit is cleared */
+	 	  while(DMA_CCR1_EN == (DMA_CCR1_EN & DMA1_Channel5->CCR))
+	 	    {
+	 	      /* Do nothing until EN bit is cleared */
+	 	    }
+	 	  }
+	 	  else
+	 	  {
+	 	    /* Do nothing, stream 5 is not enabled */
+	 	  }
+
+	  /* Set Peripheral size 8-bits (00)*/
+	 	DMA1_Channel5 ->CCR   &= ~DMA_CCR1_PSIZE;
+
+	  /* Set Memory size 8-bits (00)*/
+	 	DMA1_Channel5 ->CCR   &= ~DMA_CCR1_MSIZE;
+
+	  /* Set Channel priority Very high (11)*/
+	 	DMA1_Channel5 ->CCR   |= DMA_CCR1_PL;
+
+	  /* Disable Peripheral increment mode (0) */
+	 	DMA1_Channel5 ->CCR   &= ~DMA_CCR1_PINC;
+
+	  /* Enable memory increment mode (1)*/
+	 	DMA1_Channel5 ->CCR   |= DMA_CCR1_MINC;
+
+	  /* Disable Circular mode (0)*/
+	 	DMA1_Channel5 ->CCR   &= ~DMA_CCR1_CIRC;
+
+	  /* Diable M2M Mode (0) */
+	 	DMA1_Channel5 ->CCR   &= ~DMA_CCR1_MEM2MEM;
+
+	  /* Data transfer direction Read from peripheral (0)*/
+	 	DMA1_Channel5 ->CCR   &= ~DMA_CCR1_DIR;
+
+	  /* Enable Transfer complete interrupt */
+	 	DMA1_Channel5 ->CCR   |= DMA_CCR1_TCIE;
+
+	    /* Set address for peripheral */
+	 	DMA1_Channel5 ->CPAR   = (uint32_t)&USART1->DR;
+
+	    /* Set address for memory */
+	 	DMA1_Channel5 ->CMAR   = (uint32_t)RxDMABuffer;
+
+		/* Set number of data items */
+	 	DMA1_Channel5 ->CNDTR  =  MAX_BUFFER_LENGTH;
+
+		__ASM("NOP");
+		__ASM("NOP");
+		__ASM("NOP");
+		__ASM("NOP");
+}
 /**
  * @brief   IRQ callback function
  * @note
@@ -201,10 +358,16 @@ void USART1_TX_DMA_IRQ_Callback(void)
 void USART1_RX_DMA_IRQ_Callback(void)
 {
   /* Check transfer complete flag */
- if((DMA1->ISR & DMA_ISR_TCIF5) == DMA_ISR_TCIF5)
-  {
+
+	//if((DMA1->ISR & DMA_ISR_TCIF5) == DMA_ISR_TCIF5)
+  //{
     /* Calculate amount of data received */
     RxMessageLength = MAX_BUFFER_LENGTH - DMA1_Channel5->CNDTR;
+    /* Reset address for memory */
+ 	DMA1_Channel5 ->CMAR   = (uint32_t)RxDMABuffer;
+
+	/* Reset number of data items */
+ 	DMA1_Channel5 ->CNDTR  =  MAX_BUFFER_LENGTH;
 
     /* Copy data into RX buffer */
     for(int idx = 0; idx < RxMessageLength; idx++)
@@ -229,11 +392,11 @@ void USART1_RX_DMA_IRQ_Callback(void)
 
     /* Enable DMA 1 Channel 5 */
    	DMA_ChannelEnable(DMA1_Channel5,1,5);
-  }
-  else
-  {
+ // }
+  //else
+  //{
     /* Do nothing, this interrupt is not handled */
-  }
+  //}
 }
 
 
@@ -273,99 +436,139 @@ void USART_Send_String(USART_TypeDef *USARTx,const char *str)
 }
 
 
+
 /**
- * @brief   USART initialization function
- * @note    F_CK Input clock to the peripheral(PCLK1[APB1] for USART2, 3, 4, 5 or PCLK2[APB2] for USART1) & always  over-sampling by 16
- * @param   USARTx:       where x=1 ..3
- *          With_RX_DMA:  Yes
- *                        NO -> without DMA
- *          With_TX_DMA:  Yes
- *                        NO -> without DMA
- *          With_HFC:     Yes
- *                        NO -> without Hardware Flow Control
- *          F_CK:         Input clock to the peripheral in Hz
- *
+ * @brief   USART1 GPIO initialization function
+ * @note    PA9  -> USART1_TX
+ *          PA10 -> USART1_RX
+ *          PA11 -> USART1_CTS
+ *          PA12 -> USART1_RTS
+ *          "Table 5. Medium-density STM32F103xx pin definitions" in Datasheet
+ *          "Table 24. USARTs" in Reference manual
+ * @param   HFC if = 1 -> Init. CTS & RTS pins
  * @retval  None
  */
-void USART_Init(USART_TypeDef *USARTx, uint8_t With_RX_DMA, uint8_t With_TX_DMA, uint8_t With_HFC, uint32_t F_CK )
+void USART1_GPIO_Init(uint8_t HFC)
+{
+ /* GPIOA clock enable */
+  	RCC ->APB2ENR   |= RCC_APB2ENR_IOPAEN;
+
+ /* PA9 TX: Output mode, max speed 2 MHz. */
+	GPIOA ->CRH     &= ~GPIO_CRH_MODE9;
+	GPIOA ->CRH     |=  GPIO_CRH_MODE9_1;
+
+ /* PA9 TX: Alternate function output Push-pull */
+  	GPIOA ->CRH     &= ~GPIO_CRH_CNF9;
+    GPIOA ->CRH     |=  GPIO_CRH_CNF9_1;
+
+ /* PA10 RX: Floating input */
+  	GPIOA ->CRH     &= ~GPIO_CRH_CNF10;
+    GPIOA ->CRH     |=  GPIO_CRH_CNF10_0;
+
+ /* PA10 RX: Input mode */
+  	GPIOA ->CRH     &= ~GPIO_CRH_MODE10;
+ if(HFC == 1)
+ {
+ /* PA11 CTS: Floating input */
+    GPIOA ->CRH     &= ~GPIO_CRH_CNF11;
+  	GPIOA ->CRH     |=  GPIO_CRH_CNF11_0;
+
+ /* PA11 CTS: Input mode */
+  	GPIOA ->CRH     &= ~GPIO_CRH_MODE11;
+
+ /* PA12 RTS: Output mode, max speed 2 MHz. */
+  	GPIOA ->CRH     &= ~GPIO_CRH_MODE12;
+  	GPIOA ->CRH     |=  GPIO_CRH_MODE12_1;
+
+ /* PA12 RTS: Alternate function output Push-pull */
+  	GPIOA ->CRH     &= ~GPIO_CRH_CNF12;
+  	GPIOA ->CRH     |=  GPIO_CRH_CNF12_1;
+ }
+
+
+}
+
+/**
+ * @brief   USART BRR value calculation
+ * @note    F_CK Input clock to the peripheral(PCLK1[APB1] for USART2, 3, 4, 5 or PCLK2[APB2] for USART1) & always  over-sampling by 16
+ * @param   Baud_Rate:    Desired Baud Rate value
+ *          F_CK:         Input clock to the peripheral in Hz
+ * @retval  Value of BRR
+ */
+uint16_t Cal_USART_BRR_Val(uint32_t Baud_Rate, uint32_t F_CK)
+{
+	 double USARTDIV=0;
+	 uint8_t Fraction;
+
+	   /* Set baud rate = 115200 Bps
+	    * USARTDIV = Fck / (16 * baud_rate)
+	    *          = 72000000 / (16 * 115200) = 39.0625
+	    *
+	    * DIV_Fraction = 16 * 0.0625 = 1 = 0x1
+	    * DIV_Mantissa = 39 = 0x27
+	    *
+	    * BRR          = 0x271 */
+
+	  USARTDIV    = ( F_CK/(Baud_Rate*16.0) );
+	  Fraction = round( (USARTDIV - ((uint16_t)USARTDIV) )* 16 ) ;
+	  if(Fraction > 15)
+		 {
+		    Fraction=0;
+		    USARTDIV++;
+		 }
+	  return ( ( ((uint16_t)USARTDIV) << 4 ) + Fraction) ;
+}
+
+
+/**
+ * @brief   USART initialization function
+ * @note    None
+ * @param   BRR_Val:     Can be calculated using Cal_USART_BRR_Val function
+ * @retval  None
+ */
+void USART1_Init(uint16_t BRR_Val)
 {
 
- double USARTDIV=0;
- uint8_t Fraction;
+	/* USART GPIO configuration -------------------------------------------------------*/
 
-/* USART GPIO configuration -------------------------------------------------------*/
- if(USARTx == USART1)
- {
-  /* Configuration GPIOA TX & RX  based on Reference manual Table 24 & Table 54	*/
-	 GPIO_USART1_Init(With_HFC);
+	  /* Configuration GPIOA TX & RX based on Reference manual Table 24 & Table 54	*/
+		USART1_GPIO_Init(1);
 
- }
+	/* USART configuration -------------------------------------------------------*/
+	   /*Enable USART1 clock */
+	   RCC ->APB2ENR   |=  RCC_APB2ENR_USART1EN;
 
- else if(USARTx == USART3)
- {
-  /* Configuration GPIOB TX & RX based on Reference manual Table 24 & Table 52	*/
-	 GPIO_USART2_Init();
- }
+	   /* select 1 Start bit, 9 Data bits, n Stop bit  */
+	   USART1 ->CR1    |= USART_CR1_M;
 
+	   /* STOP bits, 00: 1 Stop bit */
+	   USART1->CR2    &= ~USART_CR2_STOP;
 
-/* USART configuration -------------------------------------------------------*/
-   /*Enable USART1 clock */
-   if(USARTx == USART1)
-     RCC ->APB2ENR   |=  RCC_APB2ENR_USART1EN;
-   /* Enable USART3 clock */
-   else if(USARTx == USART3)
-    RCC ->APB1ENR   |=  RCC_APB1ENR_USART3EN;
+	   /* Select odd parity */
+	   USART1->CR1 |= USART_CR1_PS;
 
-   /* select 1 Start bit, 9 Data bits, n Stop bit  */
-   USARTx ->CR1    |= USART_CR1_M;
+	   /* Enable parity control */
+	   USART1->CR1 |= USART_CR1_PCE;
 
-   /* STOP bits, 00: 1 Stop bit */
-   USARTx->CR2    &= ~USART_CR2_STOP;
+	   /* Set Baud Rate */
+	   USART1->BRR = BRR_Val;
 
-   /* Select odd parity */
-   USARTx->CR1 |= USART_CR1_PS;
+ 	   /* DMA mode enabled for reception */
+	   USART1->CR3  |= USART_CR3_DMAR;
 
-   /* Enable parity control */
-   USART1->CR1 |= USART_CR1_PCE;
+       /* DMA mode enabled for transmitting */
+	   USART1->CR3  |= USART_CR3_DMAT;
 
-   /* Set baud rate = 115200 Bps
-    * USARTDIV = Fck / (16 * baud_rate)
-    *          = 72000000 / (16 * 115200) = 39.0625
-    *
-    * DIV_Fraction = 16 * 0.0625 = 1 = 0x1
-    * DIV_Mantissa = 39 = 0x27
-    *
-    * BRR          = 0x271 */
-  USARTDIV    = ( F_CK/(Baud_Rate*16.0) );
-  Fraction = round( (USARTDIV - ((uint16_t)USARTDIV) )* 16 ) ;
-  if(Fraction > 15)
-	 {
-	    Fraction=0;
-	    USARTDIV++;
-	 }
-  USARTx ->BRR = ( ( ((uint16_t)USARTDIV) << 4 ) + Fraction) ;
+ 	  /* Enable RTS flow control */
+ 	  //USART1->CR3 |= USART_CR3_RTSE;
 
-  if(With_RX_DMA == Yes)
-  		/* DMA mode enabled for reception */
-  		USARTx->CR3  |= USART_CR3_DMAR;
+       /* Enable CTS flow control */
+ 	  //USART1->CR3 |= USART_CR3_CTSE;
 
-  if(With_RX_DMA == Yes)
-  		/* DMA mode enabled for reception */
-  		USARTx->CR3  |= USART_CR3_DMAT;
-
-  if(With_HFC == Yes)
-  {
-	  /* Enable RTS flow control */
-	  USART1->CR3 |= USART_CR3_RTSE;
-
-	  /* Enable CTS flow control */
-	  USART1->CR3 |= USART_CR3_CTSE;
-  }
-
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
-	__ASM("NOP");
+		__ASM("NOP");
+		__ASM("NOP");
+		__ASM("NOP");
+		__ASM("NOP");
 
 }
 

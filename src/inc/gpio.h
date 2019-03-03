@@ -1,8 +1,8 @@
-/*
- * GPIO.h
- *
- *  Created on: Nov 13, 2018
- *      Author: Rashad Shubita
+/*******************************************************************************
+ * @file    gpio.h
+ * @author  Rashad Shubita
+ * @email   shubitarashad@gmail.com
+ * @date    15.01.2019
  *
  * @brief   Some examples on how to use STM32 GPIOs
  *
@@ -28,7 +28,22 @@
  *          bit_word_addr = 0x42000000 + (0x0001100C * 32) + (13 * 4)
  *                        = 0x42000000 + 0x220180 + 0x34
  *                        = 0x422201B4
- */
+@verbatim
+Copyright (C) 2019, Rashad Shubita
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or any later version.
+
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along with
+this program.  If not, see <http://www.gnu.org/licenses/>.
+@endverbatim
+*******************************************************************************/
+
 
 #ifndef INC_GPIO_H_
 #define INC_GPIO_H_
@@ -83,19 +98,6 @@ void GPIO_OnBoard_Init_LED();
  * @retval  None
  */
 void GPIO_Init_PB(void);
-
-/**
- * @brief   USART1 GPIO initialization function
- * @note    PA9  -> USART1_TX
- *          PA10 -> USART1_RX
- *          PA11 -> USART1_CTS
- *          PA12 -> USART1_RTS
- *          "Table 5. Medium-density STM32F103xx pin definitions" in Datasheet
- *          "Table 24. USARTs" in Reference manual
- * @param   HFC if = 0 -> Init. CTS & RTS pins
- * @retval  None
- */
-void GPIO_USART1_Init(uint8_t HFC);
 
 /**
  * @brief   USART2 GPIO initialization function
